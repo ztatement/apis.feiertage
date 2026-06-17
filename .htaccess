@@ -1,0 +1,24 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Falls das Projekt in einem Unterverzeichnis liegt, RewriteBase anpassen
+  # Beispiel: RewriteBase /apis/feiertage/
+
+  # 1. Länder abrufen: /api/countries
+  RewriteRule ^api/countries/?$ feiertag.api.php?action=countries [QSA,L]
+
+  # 2. Regionen eines Landes abrufen: /api/DE/regions
+  RewriteRule ^api/([a-zA-Z]{2})/regions/?$ feiertag.api.php?action=regions&country=$1 [QSA,L]
+
+  # 3. ICS Export mit Region: /api/2026/DE/BY/ics
+  RewriteRule ^api/([0-9]{4})/([a-zA-Z]{2})/([a-zA-Z]{2,3})/ics/?$ ics.php?year=$1&country=$2&region=$3 [QSA,L]
+
+  # 4. ICS Export ohne Region: /api/2026/DE/ics
+  RewriteRule ^api/([0-9]{4})/([a-zA-Z]{2})/ics/?$ ics.php?year=$1&country=$2 [QSA,L]
+
+  # 5. Feiertage mit Region: /api/2026/DE/BY
+  RewriteRule ^api/([0-9]{4})/([a-zA-Z]{2})/([a-zA-Z]{2,3})/?$ feiertag.api.php?year=$1&country=$2&region=$3 [QSA,L]
+
+  # 6. Feiertage ohne Region: /api/2026/DE
+  RewriteRule ^api/([0-9]{4})/([a-zA-Z]{2})/?$ feiertag.api.php?year=$1&country=$2 [QSA,L]
+</IfModule>
