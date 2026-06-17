@@ -1,3 +1,4 @@
+/* Allgemeine Body- und Schriftstile */
 body {
   font-family: Arial, sans-serif;
   margin: 20px;
@@ -17,6 +18,7 @@ a:hover {
   text-decoration: underline;
 }
 
+/* Stil für Code-Blöcke (z.B. JSON-Ausgabe) */
 pre {
   background: #f4f4f4;
   padding: 10px;
@@ -24,6 +26,19 @@ pre {
   overflow-x: auto;
 }
 
+/* Spezifisch für JSON-Output mit Aufklapp-Funktion */
+#jsonData {
+  max-height: 120px; /* Begrenzung auf ca. 5 Zeilen */
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+
+#jsonData.expanded {
+  max-height: none;
+  overflow: auto;
+}
+
+/* Allgemeine Tabellenstile */
 table {
   border-collapse: collapse;
   margin-top: 15px;
@@ -41,6 +56,7 @@ th {
   background: #eee;
 }
 
+/* Flexbox-Container für Formularelemente */
 .flex {
   display: flex;
   gap: 10px;
@@ -48,19 +64,23 @@ th {
   flex-wrap: wrap;
 }
 
+/* Stil für Labels in Formularen */
 label {
   font-weight: bold;
 }
 
+/* Stil für Select- und Input-Felder */
 select,
 input {
   padding: 4px;
 }
 
+/* Container für die JSON-Rohdaten-Ausgabe */
 .json-output {
   margin-top: 20px;
 }
 
+/* Stil für den FullCalendar-Container */
 #calendar {
   max-width: 900px;
   margin-top: 30px;
@@ -69,3 +89,62 @@ input {
   border-radius: 6px;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
+
+/* Kalender Event-Farben */
+/* Stil für nationale Feiertage im Kalender */
+.event-national {
+  background-color: #ffc107 !important; /* Bootstrap Warning Gelb */
+  border-color: #e0a800 !important;
+  color: #212529 !important; /* Dunkler Text für bessere Lesbarkeit auf Gelb */
+}
+
+/* Stil für regionale Feiertage im Kalender */
+.event-regional {
+  background-color: #6c757d !important;
+  border-color: #495057 !important;
+}
+
+/* Diagonal zweifarbig bei Überlappung */
+/* Stil für Tage, die sowohl nationale als auch regionale Feiertage sind */
+.event-combined {
+  background: linear-gradient(45deg, #ffc107 50%, #6c757d 50%) !important;
+  border-color: #343a40 !important;
+  color: #fff !important;
+}
+
+.fc-event-title {
+  /* Stellt sicher, dass der Titel der Kalenderereignisse fett und lesbar ist */
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+/* Legende unter dem Kalender */
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 15px;
+  padding: 15px;
+  background: #fff;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.legend-box {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  border-radius: 3px;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+/* Stil für regionale Feiertagszeilen in der Tabelle */
+.row-regional { color: #666; font-style: italic; }

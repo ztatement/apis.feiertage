@@ -8,7 +8,7 @@
   * @author Thomas Boettcher @ztatement (github[at]ztatement[dot]com)
   * @copyright (c) 2026 ztatement
   *
-  * @version 1.0.0.2026.06.16
+  * @version 1.1.2.2026.06.17
   * @file $Id: classes/core/Functions.php $
   * @created $Id: 1 Dienstag, 16. Juni 2026, 06:04:16 GMT+0200Z ztatement $
   *
@@ -46,14 +46,16 @@ class Functions
   {
     // Falls keine URL übergeben wird, ermitteln wir das Protokoll für die aktuelle Seite
     if (empty($url))
-    {
-        return (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') || 
-               (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ||
-               (isset($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on') 
-               ? 'https://' : 'http://';
+    { 
+      // Prüft verschiedene Server-Variablen, um festzustellen, ob HTTPS verwendet wird
+      return (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') || 
+             (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ||
+             (isset($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on') 
+             ? 'https://' : 'http://';
     }
 
     // Überprüfen, ob die übergebene URL bereits ein Protokoll enthält
+    // Verwendet mb_substr für Multibyte-sichere String-Operationen
     if (mb_substr($url, 0, 7, CHARSET) != 'http://' && 
         mb_substr($url, 0, 8, CHARSET) != 'https://' && 
         mb_substr($url, 0, 6, CHARSET) != 'ftp://' && 

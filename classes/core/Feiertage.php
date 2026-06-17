@@ -8,7 +8,7 @@
   * @author Thomas Boettcher @ztatement (github[at]ztatement[dot]com)
   * @copyright (c) 2026 ztatement
   *
-  * @version 1.0.0.2026.06.16
+  * @version 1.1.2.2026.06.17
   * @file $Id: classes/core/Feiertage.php $
   * @created $Id: 1 Donnerstag, 7. Mai 2026, 06:23:07 GMT+0200Z ztatement $
   *
@@ -39,15 +39,19 @@
 
 class Feiertage
 {
-  private int $year;
-  private string $country;
-  private ?string $region;
+  private int $year; // Das Jahr für die Feiertagsberechnung
+  private string $country; // Der Ländercode (z.B. 'DE', 'AT')
+  private ?string $region; // Optionaler Regionencode (z.B. 'BY' für Bayern)
+/**
+  * Die Zeitzone für die Datumsberechnungen.
+  * @var DateTimeZone
+  */
   private DateTimeZone $tz;
 
-  /**
-   * Liste der unterstützten Länder.
-   * @var array
-   */
+/**
+  * Liste der unterstützten Länder.
+  * @var array
+  */
   private static array $availableCountries = [
     'DE' => 'Deutschland',
     'AT' => 'Österreich',
@@ -55,12 +59,12 @@ class Feiertage
     'PL' => 'Polen',
   ];
 
-  /**
-   * Liste der verfügbaren Regionen/Kantone pro Land.
-   * Diese Liste kann erweitert werden, auch wenn noch keine spezifischen Feiertage definiert sind.
-   *
-   * @var array
-   */
+/**
+  * Liste der verfügbaren Regionen/Kantone pro Land.
+  * Diese Liste kann erweitert werden, auch wenn noch keine spezifischen Feiertage definiert sind.
+  *
+  * @var array
+  */
   private static array $availableRegions = [
     'DE' => [
       'BW' => 'Baden-Württemberg',
@@ -132,12 +136,12 @@ class Feiertage
     return $countries;
   }
 
-  /**
-   * Gibt eine Liste der verfügbaren Regionen/Kantone für ein bestimmtes Land zurück.
-   *
-   * @param string $country Der Ländercode (z.B. 'DE', 'CH').
-   * @return array Ein assoziatives Array von Regionencodes zu Regionennamen.
-   */
+/**
+  * Gibt eine Liste der verfügbaren Regionen/Kantone für ein bestimmtes Land zurück.
+  *
+  * @param string $country Der Ländercode (z.B. 'DE', 'CH').
+  * @return array Ein assoziatives Array von Regionencodes zu Regionennamen.
+  */
   public static function getAvailableRegions(string $country): array
   {
     $country = strtoupper($country);
@@ -149,6 +153,11 @@ class Feiertage
     return [];
   }
 
+/**
+  * Ruft die Feiertage für das konfigurierte Land und die Region ab.
+  * Die Methode delegiert die Anfrage an eine länderspezifische Methode (z.B. `getFeiertageDE()`).
+  * @return array Ein assoziatives Array von Feiertagen, wobei jeder Feiertag ein Array mit 'date' und 'type' enthält.
+  */
 /**
   * Liefert alle Feiertage als assoziatives Array: 'Name' => 'YYYY-MM-DD'
   */
@@ -169,22 +178,24 @@ class Feiertage
   {
     $feiertage = [];
 
+    // Berechnung der beweglichen Feiertage basierend auf Ostern
     // Bewegliche Feiertage
     $ostersonntag = new DateTime('@' . easter_date($this->year));
     $ostersonntag->setTimezone($this->tz);
 
-    $feiertage["Neujahr"] = "{$this->year}-01-01";
-    $feiertage["Karfreitag"] = $this->shiftDate($ostersonntag, -2);
-    $feiertage["Ostersonntag"] = $ostersonntag->format('Y-m-d');
-    $feiertage["Ostermontag"] = $this->shiftDate($ostersonntag, 1);
-    $feiertage["Tag der Arbeit"] = "{$this->year}-05-01";
-    $feiertage["Christi Himmelfahrt"] = $this->shiftDate($ostersonntag, 39);
-    $feiertage["Pfingstsonntag"] = $this->shiftDate($ostersonntag, 49);
-    $feiertage["Pfingstmontag"] = $this->shiftDate($ostersonntag, 50);
-    $feiertage["Tag der Deutschen Einheit"] = "{$this->year}-10-03";
-    $feiertage["1. Weihnachtstag"] = "{$this->year}-12-25";
-    $feiertage["2. Weihnachtstag"] = "{$this->year}-12-26";
+    $feiertage["Neujahr"] = ["date" => "{$this->year}-01-01", "type" => "national"];
+    $feiertage["Karfreitag"] = ["date" => $this->shiftDate($ostersonntag, -2), "type" => "national"];
+    $feiertage["Ostersonntag"] = ["date" => $ostersonntag->format('Y-m-d'), "type" => "national"];
+    $feiertage["Ostermontag"] = ["date" => $this->shiftDate($ostersonntag, 1), "type" => "national"];
+    $feiertage["Tag der Arbeit"] = ["date" => "{$this->year}-05-01", "type" => "national"];
+    $feiertage["Christi Himmelfahrt"] = ["date" => $this->shiftDate($ostersonntag, 39), "type" => "national"];
+    $feiertage["Pfingstsonntag"] = ["date" => $this->shiftDate($ostersonntag, 49), "type" => "national"];
+    $feiertage["Pfingstmontag"] = ["date" => $this->shiftDate($ostersonntag, 50), "type" => "national"];
+    $feiertage["Tag der Deutschen Einheit"] = ["date" => "{$this->year}-10-03", "type" => "national"];
+    $feiertage["1. Weihnachtstag"] = ["date" => "{$this->year}-12-25", "type" => "national"];
+    $feiertage["2. Weihnachtstag"] = ["date" => "{$this->year}-12-26", "type" => "national"];
 
+    // Definition der regionalen Feiertage pro Bundesland
     // Regionale Feiertage
     $regionale = [
       'BW' => [
@@ -230,10 +241,12 @@ class Feiertage
     ];
 
     if ($this->region && isset($regionale[$this->region])) {
-
-      $feiertage = array_merge($feiertage, $regionale[$this->region]);
+      foreach ($regionale[$this->region] as $name => $date) {
+        $feiertage[$name] = ["date" => $date, "type" => "regional"];
+      }
     }
 
+    // Sortiert die Feiertage alphabetisch nach Namen
     ksort($feiertage);
     return $feiertage;
   }
@@ -245,27 +258,29 @@ class Feiertage
   {
     $feiertage = [];
 
+    // Berechnung der beweglichen Feiertage basierend auf Ostern
     // Bewegliche Feiertage
     $ostersonntag = new DateTime('@' . easter_date($this->year));
     $ostersonntag->setTimezone($this->tz);
 
-    $feiertage["Neujahr"] = "{$this->year}-01-01";
-    $feiertage["Heilige Drei Könige"] = "{$this->year}-01-06";
-    $feiertage["Ostersonntag"] = $ostersonntag->format('Y-m-d');
-    $feiertage["Ostermontag"] = $this->shiftDate($ostersonntag, 1);
-    $feiertage["Staatsfeiertag"] = "{$this->year}-05-01";
-    $feiertage["Christi Himmelfahrt"] = $this->shiftDate($ostersonntag, 39);
-    $feiertage["Pfingstsonntag"] = $this->shiftDate($ostersonntag, 49);
-    $feiertage["Pfingstmontag"] = $this->shiftDate($ostersonntag, 50);
-    $feiertage["Fronleichnam"] = $this->shiftDate($ostersonntag, 60);
-    $feiertage["Mariä Himmelfahrt"] = "{$this->year}-08-15";
-    $feiertage["Nationalfeiertag"] = "{$this->year}-10-26";
-    $feiertage["Allerheiligen"] = "{$this->year}-11-01";
-    $feiertage["Mariä Empfängnis"] = "{$this->year}-12-08";
-    $feiertage["1. Weihnachtstag"] = "{$this->year}-12-25";
-    $feiertage["2. Weihnachtstag"] = "{$this->year}-12-26";
+    $feiertage["Neujahr"] = ["date" => "{$this->year}-01-01", "type" => "national"];
+    $feiertage["Heilige Drei Könige"] = ["date" => "{$this->year}-01-06", "type" => "national"];
+    $feiertage["Ostersonntag"] = ["date" => $ostersonntag->format('Y-m-d'), "type" => "national"];
+    $feiertage["Ostermontag"] = ["date" => $this->shiftDate($ostersonntag, 1), "type" => "national"];
+    $feiertage["Staatsfeiertag"] = ["date" => "{$this->year}-05-01", "type" => "national"];
+    $feiertage["Christi Himmelfahrt"] = ["date" => $this->shiftDate($ostersonntag, 39), "type" => "national"];
+    $feiertage["Pfingstsonntag"] = ["date" => $this->shiftDate($ostersonntag, 49), "type" => "national"];
+    $feiertage["Pfingstmontag"] = ["date" => $this->shiftDate($ostersonntag, 50), "type" => "national"];
+    $feiertage["Fronleichnam"] = ["date" => $this->shiftDate($ostersonntag, 60), "type" => "national"];
+    $feiertage["Mariä Himmelfahrt"] = ["date" => "{$this->year}-08-15", "type" => "national"];
+    $feiertage["Nationalfeiertag"] = ["date" => "{$this->year}-10-26", "type" => "national"];
+    $feiertage["Allerheiligen"] = ["date" => "{$this->year}-11-01", "type" => "national"];
+    $feiertage["Mariä Empfängnis"] = ["date" => "{$this->year}-12-08", "type" => "national"];
+    $feiertage["1. Weihnachtstag"] = ["date" => "{$this->year}-12-25", "type" => "national"];
+    $feiertage["2. Weihnachtstag"] = ["date" => "{$this->year}-12-26", "type" => "national"];
 
     ksort($feiertage);
+    // Sortiert die Feiertage alphabetisch nach Namen
     return $feiertage;
   }
 
@@ -277,22 +292,24 @@ class Feiertage
   {
     $feiertage = [];
 
+    // Berechnung der beweglichen Feiertage basierend auf Ostern
     // Bewegliche Feiertage
     $ostersonntag = new DateTime('@' . easter_date($this->year));
     $ostersonntag->setTimezone($this->tz);
 
     // Bundesweite Feiertage
-    $feiertage["Neujahr"] = "{$this->year}-01-01";
-    $feiertage["Karfreitag"] = $this->shiftDate($ostersonntag, -2);
-    $feiertage["Ostersonntag"] = $ostersonntag->format('Y-m-d');
-    $feiertage["Ostermontag"] = $this->shiftDate($ostersonntag, 1);
-    $feiertage["Auffahrt"] = $this->shiftDate($ostersonntag, 39); // Christi Himmelfahrt
-    $feiertage["Pfingstsonntag"] = $this->shiftDate($ostersonntag, 49);
-    $feiertage["Pfingstmontag"] = $this->shiftDate($ostersonntag, 50);
-    $feiertage["Bundesfeier"] = "{$this->year}-08-01";
-    $feiertage["1. Weihnachtstag"] = "{$this->year}-12-25";
-    $feiertage["Stephanstag"] = "{$this->year}-12-26";
+    $feiertage["Neujahr"] = ["date" => "{$this->year}-01-01", "type" => "national"];
+    $feiertage["Karfreitag"] = ["date" => $this->shiftDate($ostersonntag, -2), "type" => "national"];
+    $feiertage["Ostersonntag"] = ["date" => $ostersonntag->format('Y-m-d'), "type" => "national"];
+    $feiertage["Ostermontag"] = ["date" => $this->shiftDate($ostersonntag, 1), "type" => "national"];
+    $feiertage["Auffahrt"] = ["date" => $this->shiftDate($ostersonntag, 39), "type" => "national"];
+    $feiertage["Pfingstsonntag"] = ["date" => $this->shiftDate($ostersonntag, 49), "type" => "national"];
+    $feiertage["Pfingstmontag"] = ["date" => $this->shiftDate($ostersonntag, 50), "type" => "national"];
+    $feiertage["Bundesfeier"] = ["date" => "{$this->year}-08-01", "type" => "national"];
+    $feiertage["1. Weihnachtstag"] = ["date" => "{$this->year}-12-25", "type" => "national"];
+    $feiertage["Stephanstag"] = ["date" => "{$this->year}-12-26", "type" => "national"];
 
+    // Definition der kantonalen Feiertage pro Kanton
     // Kantons-spezifische Feiertage
     $kantonal = [
       'ZH' => [ // Zürich
@@ -315,10 +332,12 @@ class Feiertage
     ];
 
     if ($this->region && isset($kantonal[$this->region])) {
-
-      $feiertage = array_merge($feiertage, $kantonal[$this->region]);
+      foreach ($kantonal[$this->region] as $name => $date) {
+        $feiertage[$name] = ["date" => $date, "type" => "regional"];
+      }
     }
 
+    // Sortiert die Feiertage alphabetisch nach Namen
     ksort($feiertage);
     return $feiertage;
   }
@@ -366,25 +385,27 @@ class Feiertage
   {
     $feiertage = [];
 
+    // Berechnung der beweglichen Feiertage basierend auf Ostern
     // Bewegliche Feiertage
     $ostersonntag = new DateTime('@' . easter_date($this->year));
     $ostersonntag->setTimezone($this->tz);
 
-    $feiertage["Neujahr"] = "{$this->year}-01-01";
-    $feiertage["Heilige Drei Könige"] = "{$this->year}-01-06";
-    $feiertage["Ostersonntag"] = $ostersonntag->format('Y-m-d');
-    $feiertage["Ostermontag"] = $this->shiftDate($ostersonntag, 1);
-    $feiertage["Tag der Arbeit"] = "{$this->year}-05-01";
-    $feiertage["Tag der Verfassung"] = "{$this->year}-05-03";
-    $feiertage["Pfingstsonntag"] = $this->shiftDate($ostersonntag, 49);
-    $feiertage["Fronleichnam"] = $this->shiftDate($ostersonntag, 60);
-    $feiertage["Mariä Himmelfahrt"] = "{$this->year}-08-15";
-    $feiertage["Allerheiligen"] = "{$this->year}-11-01";
-    $feiertage["Unabhängigkeitstag"] = "{$this->year}-11-11";
-    $feiertage["1. Weihnachtstag"] = "{$this->year}-12-25";
-    $feiertage["2. Weihnachtstag"] = "{$this->year}-12-26";
+    $feiertage["Neujahr"] = ["date" => "{$this->year}-01-01", "type" => "national"];
+    $feiertage["Heilige Drei Könige"] = ["date" => "{$this->year}-01-06", "type" => "national"];
+    $feiertage["Ostersonntag"] = ["date" => $ostersonntag->format('Y-m-d'), "type" => "national"];
+    $feiertage["Ostermontag"] = ["date" => $this->shiftDate($ostersonntag, 1), "type" => "national"];
+    $feiertage["Tag der Arbeit"] = ["date" => "{$this->year}-05-01", "type" => "national"];
+    $feiertage["Tag der Verfassung"] = ["date" => "{$this->year}-05-03", "type" => "national"];
+    $feiertage["Pfingstsonntag"] = ["date" => $this->shiftDate($ostersonntag, 49), "type" => "national"];
+    $feiertage["Fronleichnam"] = ["date" => $this->shiftDate($ostersonntag, 60), "type" => "national"];
+    $feiertage["Mariä Himmelfahrt"] = ["date" => "{$this->year}-08-15", "type" => "national"];
+    $feiertage["Allerheiligen"] = ["date" => "{$this->year}-11-01", "type" => "national"];
+    $feiertage["Unabhängigkeitstag"] = ["date" => "{$this->year}-11-11", "type" => "national"];
+    $feiertage["1. Weihnachtstag"] = ["date" => "{$this->year}-12-25", "type" => "national"];
+    $feiertage["2. Weihnachtstag"] = ["date" => "{$this->year}-12-26", "type" => "national"];
 
     ksort($feiertage);
+    // Sortiert die Feiertage alphabetisch nach Namen
     return $feiertage;
 
    /*
@@ -397,6 +418,11 @@ class Feiertage
 
 /**
   * Hilfsfunktion: Datum um X Tage verschieben
+  * Erstellt ein neues DateTime-Objekt, um das Originalobjekt nicht zu modifizieren.
+  *
+  * @param DateTime $date Das ursprüngliche Datum.
+  * @param int $days Die Anzahl der Tage, um die das Datum verschoben werden soll (positiv oder negativ).
+  * @return string Das verschobene Datum im Format 'YYYY-MM-DD'.
   */
   private function shiftDate(DateTime $date, int $days): string
   {
@@ -405,6 +431,10 @@ class Feiertage
 
 /**
   * Berechnet Buß- und Bettag (Mittwoch vor dem 23. November)
+  *
+  * @return string Das Datum des Buß- und Bettags im Format 'YYYY-MM-DD'.
+  * @throws Exception Wenn das Jahr außerhalb des gültigen Bereichs liegt (durch DateTime-Konstruktor).
+  * @see https://de.wikipedia.org/wiki/Bu%C3%9F-_und_Bettag
   */
   private function getBussUndBettag(): string
   {
@@ -414,6 +444,11 @@ class Feiertage
   }
 
 /**
+  * Generiert eine iCalendar (ICS)-Datei für alle Feiertage des konfigurierten Jahres, Landes und der Region.
+  * Jedes Event enthält eine 24-Stunden-Erinnerung.
+  *
+  * @return string Der vollständige ICS-String.
+  * @throws Exception Wenn die Feiertage für das Land nicht definiert sind (durch getFeiertage()).
   * Feiertage als ICS-String exportieren
   * @return string
   */
@@ -427,17 +462,26 @@ class Feiertage
     $ics .= "CALSCALE:GREGORIAN\r\n";
     $ics .= "METHOD:PUBLISH\r\n";
 
-    foreach ($feiertage as $name => $datum) {
+    foreach ($feiertage as $name => $info) {
+      // Formatiert das Startdatum für ICS (YYYYMMDD)
+      $start = date('Ymd', strtotime($info['date'])); 
+      // Generiert eine eindeutige ID für das Kalenderereignis
+      $uid = uniqid() . "@feiertage.local"; 
 
-      $start = date('Ymd', strtotime($datum));
-      $uid = uniqid() . "@feiertage.local";
-
+      // Start eines Kalenderereignisses
       $ics .= "BEGIN:VEVENT\r\n";
       $ics .= "UID:$uid\r\n";
       $ics .= "DTSTAMP:" . gmdate('Ymd\THis\Z') . "\r\n";
       $ics .= "DTSTART;VALUE=DATE:$start\r\n";
       $ics .= "SUMMARY:" . $this->escapeICS($name) . "\r\n";
       $ics .= "TRANSP:TRANSPARENT\r\n";
+      $ics .= "BEGIN:VALARM\r\n";
+      $ics .= "ACTION:DISPLAY\r\n"; // Aktion: Anzeige einer Nachricht
+      $ics .= "DESCRIPTION:Erinnerung: " . $this->escapeICS($name) . "\r\n"; // Beschreibung der Erinnerung
+      $ics .= "TRIGGER:-PT24H\r\n"; // Trigger: 24 Stunden vor dem Ereignis
+      $ics .= "END:VALARM\r\n";
+      // Fügt eine Kategorie hinzu, um Feiertage in einigen Kalenderanwendungen besser zu filtern/färben
+      $ics .= "CATEGORIES:HOLIDAY\r\n"; 
       $ics .= "END:VEVENT\r\n";
     }
 
@@ -446,6 +490,12 @@ class Feiertage
   }
 
 /**
+  * Escaped spezielle Zeichen für die Verwendung in ICS-Dateien.
+  * Kommas, Semikolons, Backslashes und Zeilenumbrüche müssen escaped werden.
+  *
+  * @param string $text Der zu escapende Text.
+  * @return string Der escapte Text.
+  * @see https://icalendar.org/rdata/RFC5545.html#_3_3_11_Text
   * Hilfsfunktion: Sonderzeichen für ICS escapen
   */
   private function escapeICS(string $text): string
@@ -457,6 +507,9 @@ class Feiertage
     );
   }
 
+/**
+  * Assoziatives Array für Übersetzungen von Feiertagsnamen in verschiedene Sprachen.
+  */
   private $translations = [
     'PL' => [
       "Neujahr" => "Nowy Rok",
@@ -476,6 +529,12 @@ class Feiertage
   ];
 
 /**
+  * Gibt die Feiertage zurück, optional mit übersetzten Namen.
+  * Wenn eine unterstützte Sprache angegeben wird, werden die Feiertagsnamen übersetzt.
+  *
+  * @param string|null $lang Der Ländercode der Zielsprache (z.B. 'PL').
+  * @return array Ein assoziatives Array von Feiertagen, mit übersetzten Namen, falls verfügbar.
+  * @throws Exception Wenn die Feiertage für das Land nicht definiert sind (durch getFeiertage()).
   * Feiertage mit optionaler Übersetzung zurückgeben
   */
   public function getFeiertageTranslated(?string $lang = null): array
@@ -484,10 +543,10 @@ class Feiertage
 
     if ($lang && isset($this->translations[$lang])) {
 
-      foreach ($holidays as $name => $date) {
+      foreach ($holidays as $name => $info) {
         if (isset($this->translations[$lang][$name])) {
 
-          $holidays[$this->translations[$lang][$name]] = $date;
+          $holidays[$this->translations[$lang][$name]] = $info;
           unset($holidays[$name]);
         }
       }

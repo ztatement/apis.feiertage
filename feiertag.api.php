@@ -6,7 +6,7 @@
   * @author Thomas Boettcher @ztatement (github[at]ztatement[dot]com)
   * @copyright (c) 2026 ztatement
   *
-  * @version 1.0.0.2026.06.16
+  * @version 1.1.2.2026.06.17
   * @file $Id: feiertag.api.php $
   * @created $Id: 1 Donnerstag, 7. Mai 2026, 06:23:31 GMT+0200Z ztatement $
   *
@@ -22,12 +22,14 @@
   use FTA\Core\Feiertage;
 
 
-  // Immer UTF-8 und JSON ausgeben
+  // Setzt den Content-Type Header auf JSON mit UTF-8 Kodierung
   header('Content-Type: application/json; charset=utf-8');
 
-  // Fehlerausgabe als JSON
+  // Registriert einen globalen Exception-Handler, um Fehler als JSON zurückzugeben
   set_exception_handler(function ($e) {
+    // Setzt den HTTP-Statuscode auf 400 (Bad Request) bei einem Fehler
     http_response_code(400);
+    // Gibt die Fehlermeldung als JSON aus
     echo json_encode(['error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
     exit;
   });
@@ -37,6 +39,7 @@
   $country = isset($_GET['country']) ? strtoupper($_GET['country']) : 'DE';
   $region  = isset($_GET['region']) && $_GET['region'] !== '' ? strtoupper($_GET['region']) : null;
   $action  = $_GET['action'] ?? 'holidays'; // Standardaktion ist 'holidays'
+  // Die 'action' bestimmt, welche Art von Daten die API zurückgeben soll (Länder, Regionen oder Feiertage)
 
   // Wenn die Aktion 'countries' ist, gib die verfügbaren Länder zurück
   if ($action === 'countries') {
@@ -54,7 +57,7 @@
       'regions' => $regions
     ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     exit; // Beende die Skriptausführung nach der Ausgabe der Regionen
-  }
+  } 
 
   // Feiertage abrufen
   $feiertage = new Feiertage($year, $country, $region);

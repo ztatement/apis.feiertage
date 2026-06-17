@@ -6,7 +6,7 @@
   * @author Thomas Boettcher @ztatement (github[at]ztatement[dot]com)
   * @copyright (c) 2026 ztatement
   *
-  * @version 1.0.0.2026.06.16
+  * @version 1.1.2.2026.06.17
   * @file $Id: config.php $
   * @created $Id: 1 Dienstag, 16. Juni 2026, 05:48:43 GMT+0200Z ztatement $
   *
@@ -19,27 +19,28 @@
   require_once './classes/core/Functions.php';
   use FTA\Core\Functions;
   
-  // Globale Konfiguration
-  define( 'CHARSET', 'UTF-8' );
-  // define( 'BASE_PATH', dirname( __DIR__ ) . "/" );
-  define( 'BASE_PATH', Functions::get_base_path() );
+  
+  // Globale Konfigurationseinstellungen
+  define( 'CHARSET', 'UTF-8' ); // Standard-Zeichensatz der Anwendung
+  
+  define( 'BASE_PATH', Functions::get_base_path() ); // Basis-Pfad des Projekts auf dem Server
   define( 'BASE_URL', Functions::get_base_url() );
 
   // App Version für Cache-Busting (bei jeder Änderung an CSS/JS erhöhen)
-  define('ASSETS_VERSION', '1.0.7');
+  define('ASSETS_VERSION', '1.1.2');
 
   // Logfile
   define( 'LOG_DIR', BASE_PATH . '.logs' . DIRECTORY_SEPARATOR );
-  define( 'LOG_PATH', LOG_DIR );
-  define( 'LOG_FILE', LOG_DIR . 'fta.log' ); // Allgemeines Log
-  define( 'LOG_FILE_DEBUG', LOG_DIR . 'debug.log' ); // Debug-Log
-  define( 'LOG_FILE_ERROR', LOG_DIR . 'error.log' ); // Error-Log
+  define( 'LOG_PATH', LOG_DIR ); // Alias für LOG_DIR
+  define( 'LOG_FILE', LOG_DIR . 'fta.log' ); // Pfad zur allgemeinen Log-Datei
+  define( 'LOG_FILE_DEBUG', LOG_DIR . 'debug.log' ); // Pfad zur Debug-Log-Datei
+  define( 'LOG_FILE_ERROR', LOG_DIR . 'error.log' ); // Pfad zur Error-Log-Datei
 
-  // Bootstrap
-  define( 'BOOTSTRAP_CSS', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css' );
-  define( 'BOOTSTRAP_JS', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js' );
+  // Externe Bibliotheken (CDNs)
+  define( 'BOOTSTRAP_CSS', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css' ); // Bootstrap CSS
+  define( 'BOOTSTRAP_JS', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js' ); // Bootstrap JS
 
-  // FullCalendar v6
+  // FullCalendar v6 (JavaScript-Kalenderbibliothek)
   define( 'FULLCALENDAR_CSS', 'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css' );
   define( 'FULLCALENDAR_JS', 'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js' );
 
@@ -47,6 +48,6 @@
   return [
     'api_key_enabled' => false,
     'api_key' => 'MEIN-GEHEIMER-SCHLUESSEL-123',
-    'cors_enabled' => true,                       // CORS-Unterstützung aktivieren/deaktivieren
+    'cors_enabled' => true,                      // CORS-Unterstützung aktivieren/deaktivieren
     'cors_whitelist' => ['*'],                   // Erlaubte Domains (z.B. ['https://meine-app.de']) oder ['*'] für alle
   ];
