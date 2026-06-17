@@ -39,6 +39,7 @@
   $country = isset($_GET['country']) ? strtoupper($_GET['country']) : 'DE';
   $region  = isset($_GET['region']) && $_GET['region'] !== '' ? strtoupper($_GET['region']) : null;
   $action  = $_GET['action'] ?? 'holidays'; // Standardaktion ist 'holidays'
+  $lang    = Feiertage::resolveLanguage($_GET['lang'] ?? null);
   // Die 'action' bestimmt, welche Art von Daten die API zurückgeben soll (Länder, Regionen oder Feiertage)
 
   // Wenn die Aktion 'countries' ist, gib die verfügbaren Länder zurück
@@ -61,7 +62,7 @@
 
   // Feiertage abrufen
   $feiertage = new Feiertage($year, $country, $region);
-  $data = $feiertage->getFeiertage();
+  $data = $feiertage->getFeiertageTranslated($lang);
 
   // JSON ausgeben
   echo json_encode([

@@ -84,6 +84,17 @@ class Feiertage
       'SH' => 'Schleswig-Holstein',
       'TH' => 'Thüringen',
     ],
+    'AT' => [
+      'B'  => 'Burgenland',
+      'K'  => 'Kärnten',
+      'N'  => 'Niederösterreich',
+      'O'  => 'Oberösterreich',
+      'S'  => 'Salzburg',
+      'ST' => 'Steiermark',
+      'T'  => 'Tirol',
+      'V'  => 'Vorarlberg',
+      'W'  => 'Wien',
+    ],
     'CH' => [
       'AG' => 'Aargau',
       'AI' => 'Appenzell Innerrhoden',
@@ -151,6 +162,30 @@ class Feiertage
       return $regions;
     }
     return [];
+  }
+
+/**
+  * Validiert die angegebene Sprache und gibt einen Fallback zurück, falls sie nicht unterstützt wird.
+  * Standard-Fallback ist Englisch (EN), wenn nicht Deutsch (DE) angefordert wurde.
+  * 
+  * @param string|null $lang Der Sprachcode.
+  * @return string Der validierte Sprachcode.
+  */
+  public static function resolveLanguage(?string $lang): string
+  {
+    if (empty($lang)) return 'DE';
+    $lang = strtoupper($lang);
+    // Wenn die Sprache unterstützt wird, nimm sie. Sonst Fallback auf EN.
+    return array_key_exists($lang, self::$languageNames) ? $lang : 'EN';
+  }
+
+/**
+  * Gibt die Liste der unterstützten Sprachen zurück.
+  * @return array Assoziatives Array [Code => Name]
+  */
+  public static function getAvailableLanguages(): array
+  {
+    return self::$languageNames;
   }
 
 /**
@@ -279,6 +314,29 @@ class Feiertage
     $feiertage["1. Weihnachtstag"] = ["date" => "{$this->year}-12-25", "type" => "national"];
     $feiertage["2. Weihnachtstag"] = ["date" => "{$this->year}-12-26", "type" => "national"];
 
+    // Regionale Feiertage (Landesfeiertage / Patrozinium)
+    $regionale = [
+      'B' => ["Martinitag" => "{$this->year}-11-11"],
+      'K' => [
+        "Josefitag" => "{$this->year}-03-19",
+        "Tag der Volksabstimmung" => "{$this->year}-10-10"
+      ],
+      'N' => ["Leopolditag" => "{$this->year}-11-15"],
+      'O' => ["Florianitag" => "{$this->year}-05-04"],
+      'S' => ["Rupertitag" => "{$this->year}-09-24"],
+      'ST' => ["Josefitag" => "{$this->year}-03-19"],
+      'T' => ["Josefitag" => "{$this->year}-03-19"],
+      'V' => ["Josefitag" => "{$this->year}-03-19"],
+      'W' => ["Leopolditag" => "{$this->year}-11-15"]
+    ];
+
+    // Wenn eine Region gesetzt ist und Feiertage dafür existieren, diese hinzufügen
+    if ($this->region && isset($regionale[$this->region])) {
+      foreach ($regionale[$this->region] as $name => $date) {
+        $feiertage[$name] = ["date" => $date, "type" => "regional"];
+      }
+    }
+
     ksort($feiertage);
     // Sortiert die Feiertage alphabetisch nach Namen
     return $feiertage;
@@ -312,12 +370,34 @@ class Feiertage
     // Definition der kantonalen Feiertage pro Kanton
     // Kantons-spezifische Feiertage
     $kantonal = [
-      'ZH' => [ // Zürich
+      'AG' => [ // Aargau
         "Berchtoldstag" => "{$this->year}-01-02",
-        "Sechseläuten" => $this->getSechselauten()
+        "Fronleichnam" => $this->shiftDate($ostersonntag, 60),
+        "Allerheiligen" => "{$this->year}-11-01",
+        "Mariä Empfängnis" => "{$this->year}-12-08"
+      ],
+      'BE' => [ // Bern
+        "Berchtoldstag" => "{$this->year}-01-02"
+      ],
+      'BS' => [ // Basel-Stadt
+        "Tag der Arbeit" => "{$this->year}-05-01"
       ],
       'GE' => [ // Genf
-        "Jeûne genevois" => $this->getJeuneGenevois()
+        "Jeûne genevois" => $this->getJeuneGenevois(),
+        "Restauration de la République" => "{$this->year}-12-31"
+      ],
+      'GL' => [ // Glarus
+        "Näfelser Fahrt" => $this->getNaefelserFahrt()
+      ],
+      'LU' => [ // Luzern
+        "Berchtoldstag" => "{$this->year}-01-02",
+        "Fronleichnam" => $this->shiftDate($ostersonntag, 60),
+        "Mariä Himmelfahrt" => "{$this->year}-08-15",
+        "Allerheiligen" => "{$this->year}-11-01",
+        "Mariä Empfängnis" => "{$this->year}-12-08"
+      ],
+      'SG' => [ // St. Gallen
+        "Allerheiligen" => "{$this->year}-11-01"
       ],
       'TI' => [ // Tessin
         "San Giuseppe" => "{$this->year}-03-19",
@@ -327,8 +407,11 @@ class Feiertage
         "Mariä Himmelfahrt" => "{$this->year}-08-15",
         "Allerheiligen" => "{$this->year}-11-01",
         "Mariä Empfängnis" => "{$this->year}-12-08"
+      ],
+      'ZH' => [ // Zürich
+        "Berchtoldstag" => "{$this->year}-01-02",
+        "Sechseläuten" => $this->getSechselauten()
       ]
-      // Weitere Kantone hier ergänzen...
     ];
 
     if ($this->region && isset($kantonal[$this->region])) {
@@ -362,6 +445,23 @@ class Feiertage
     return $date->format('Y-m-d');
   }
 
+/**
+  * Näfelser Fahrt (1. Donnerstag im April, außer bei Gründonnerstag, dann 2. Donnerstag)
+  */
+  private function getNaefelserFahrt(): string
+  {
+    $date = new DateTime("first thursday of april {$this->year}", $this->tz);
+    $ostersonntag = new DateTime('@' . easter_date($this->year));
+    $ostersonntag->setTimezone($this->tz);
+    $gruendonnerstag = (clone $ostersonntag)->modify('-3 days');
+
+    if ($date->format('Y-m-d') === $gruendonnerstag->format('Y-m-d')) {
+      $date->modify('+7 days');
+    }
+
+    return $date->format('Y-m-d');
+  }
+
  /*
   * Verwendung:
   * // Schweiz allgemein (nur bundesweite Feiertage)
@@ -379,7 +479,9 @@ class Feiertage
 
 
 /**
-  * Platzhalter für Polen
+  * Feiertage für Polen
+  * Hinweis: In Polen gibt es keine regionalen arbeitsfreien Feiertage. 
+  * Alle gesetzlichen Feiertage gelten landesweit.
   */
   private function getFeiertagePL(): array
   {
@@ -450,11 +552,12 @@ class Feiertage
   * @return string Der vollständige ICS-String.
   * @throws Exception Wenn die Feiertage für das Land nicht definiert sind (durch getFeiertage()).
   * Feiertage als ICS-String exportieren
+  * @param string|null $lang
   * @return string
   */
-  public function toICS(): string
+  public function toICS(?string $lang = null): string
   {
-    $feiertage = $this->getFeiertage();
+    $feiertage = $this->getFeiertageTranslated($lang);
 
     $ics = "BEGIN:VCALENDAR\r\n";
     $ics .= "VERSION:2.0\r\n";
@@ -508,9 +611,18 @@ class Feiertage
   }
 
 /**
+  * Liste der unterstützten Sprachen mit ihren Anzeigenamen.
+  * @var array
+  */
+  private static array $languageNames = [
+    'DE' => 'Deutsch',
+    'EN' => 'English',
+    'PL' => 'Polski',
+  ];
+/**
   * Assoziatives Array für Übersetzungen von Feiertagsnamen in verschiedene Sprachen.
   */
-  private $translations = [
+  private static array $translations = [
     'PL' => [
       "Neujahr" => "Nowy Rok",
       "Heilige Drei Könige" => "Święto Trzech Króli",
@@ -525,6 +637,47 @@ class Feiertage
       "Unabhängigkeitstag" => "Narodowe Święto Niepodległości",
       "1. Weihnachtstag" => "Boże Narodzenie (pierwszy dzień)",
       "2. Weihnachtstag" => "Boże Narodzenie (drugi dzień)"
+    ],
+    'EN' => [
+      "Neujahr" => "New Year's Day",
+      "Heilige Drei Könige" => "Epiphany",
+      "Karfreitag" => "Good Friday",
+      "Ostersonntag" => "Easter Sunday",
+      "Ostermontag" => "Easter Monday",
+      "Tag der Arbeit" => "Labour Day",
+      "Christi Himmelfahrt" => "Ascension Day",
+      "Pfingstsonntag" => "Whit Sunday",
+      "Pfingstmontag" => "Whit Monday",
+      "Tag der Deutschen Einheit" => "Day of German Unity",
+      "1. Weihnachtstag" => "Christmas Day",
+      "2. Weihnachtstag" => "St. Stephen's Day / Boxing Day",
+      "Internationaler Frauentag" => "International Women's Day",
+      "Weltkindertag" => "World Children's Day",
+      "Reformationstag" => "Reformation Day",
+      "Fronleichnam" => "Corpus Christi",
+      "Mariä Himmelfahrt" => "Assumption Day",
+      "Buß- und Bettag" => "Repentance and Prayer Day",
+      "Staatsfeiertag" => "State Holiday",
+      "Nationalfeiertag" => "National Holiday",
+      "Allerheiligen" => "All Saints' Day",
+      "Mariä Empfängnis" => "Immaculate Conception",
+      "Martinitag" => "Saint Martin's Day",
+      "Josefitag" => "Saint Joseph's Day",
+      "Tag der Volksabstimmung" => "Carinthian Plebiscite Day",
+      "Leopolditag" => "Saint Leopold's Day",
+      "Florianitag" => "Saint Florian's Day",
+      "Rupertitag" => "Saint Rupert's Day",
+      "Auffahrt" => "Ascension Day",
+      "Bundesfeier" => "Swiss National Day",
+      "Stephanstag" => "Saint Stephen's Day",
+      "Berchtoldstag" => "Berchtold's Day",
+      "Jeûne genevois" => "Genevan Fast",
+      "Restauration de la République" => "Restoration of the Republic",
+      "Näfelser Fahrt" => "Näfelser Fahrt",
+      "San Giuseppe" => "Saint Joseph's Day",
+      "Sechseläuten" => "Sechseläuten",
+      "Tag der Verfassung" => "Constitution Day",
+      "Unabhängigkeitstag" => "Independence Day"
     ]
   ];
 
@@ -539,14 +692,15 @@ class Feiertage
   */
   public function getFeiertageTranslated(?string $lang = null): array
   {
+    $lang = self::resolveLanguage($lang);
     $holidays = $this->getFeiertage();
 
-    if ($lang && isset($this->translations[$lang])) {
+    if (isset(self::$translations[$lang])) {
 
       foreach ($holidays as $name => $info) {
-        if (isset($this->translations[$lang][$name])) {
+        if (isset(self::$translations[$lang][$name])) {
 
-          $holidays[$this->translations[$lang][$name]] = $info;
+          $holidays[self::$translations[$lang][$name]] = $info;
           unset($holidays[$name]);
         }
       }

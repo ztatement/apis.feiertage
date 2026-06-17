@@ -5,6 +5,7 @@
   const yearInput = document.getElementById('year'); // Input-Feld für das Jahr
   const countryInput = document.getElementById('country'); // Select-Feld für das Land
   const regionInput = document.getElementById('region'); // Select-Feld für die Region
+  const languageInput = document.getElementById('language'); // Select-Feld für die Sprache
   let calendar; // Variable zur Speicherung der FullCalendar-Instanz
   const toggleJsonBtn = document.getElementById('toggleJsonBtn');
   const jsonDataPre = document.getElementById('jsonData');
@@ -16,6 +17,7 @@
     loadRegions();
   });
   regionInput.addEventListener('change', loadHolidays); // Bei Regionenwechsel Feiertage neu laden
+  languageInput.addEventListener('change', loadHolidays); // Bei Sprachwechsel Feiertage neu laden
 
   // Event Listener für den ICS-Export-Button am Ende der Seite
   if (bottomIcsExportBtn) {
@@ -23,7 +25,8 @@
       const year = yearInput.value;
       const country = countryInput.value;
       const region = regionInput.value;
-      const icsUrl = `ics.php?year=${year}&country=${country}${region ? '&region=' + region : ''}`;
+      const lang = languageInput.value;
+      const icsUrl = `ics.php?year=${year}&country=${country}${region ? '&region=' + region : ''}${lang !== 'DE' ? '&lang=' + lang : ''}`;
       window.location.href = icsUrl; // Startet den Download mit den aktuellen Filtereinstellungen
     });
   }
@@ -78,6 +81,7 @@
     const year = parseInt(yearInput.value); // Konvertiert den Jahreswert in eine Ganzzahl
     const country = countryInput.value;
     const region = regionInput.value; // Wert aus dem Select-Feld
+    const lang = languageInput.value;
 
     // Validierung: Jahr im Bereich 1900 - 2100
     if (isNaN(year) || year < 1900 || year > 2100) { // Prüft, ob das Jahr gültig ist
@@ -91,6 +95,9 @@
     let url = `feiertag.api.php?year=${encodeURIComponent(year)}&country=${encodeURIComponent(country)}`;
     if (region) { // Fügt die Region nur hinzu, wenn sie ausgewählt ist
       url += `&region=${encodeURIComponent(region)}`;
+    }
+    if (lang && lang !== 'DE') {
+      url += `&lang=${encodeURIComponent(lang)}`;
     }
 
     // Aktuelle API-URL anzeigen
@@ -201,7 +208,8 @@
         // ICS Export Event Listener
         // Muss hier hinzugefügt werden, da der Button dynamisch erzeugt wird
         document.getElementById('icsExportBtn').addEventListener('click', () => {
-          const icsUrl = `ics.php?year=${year}&country=${country}${region ? '&region=' + region : ''}`;
+          const lang = languageInput.value;
+          const icsUrl = `ics.php?year=${year}&country=${country}${region ? '&region=' + region : ''}${lang !== 'DE' ? '&lang=' + lang : ''}`;
           window.location.href = icsUrl; // Leitet den Browser zur ICS-Datei um, um den Download zu starten
         });
 

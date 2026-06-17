@@ -45,7 +45,7 @@
     <ul>
       <li><a href="feiertag.api.php?year=<?= $year ?>&country=DE">Deutschland <?= $year ?></a></li>
       <li><a href="feiertag.api.php?year=<?= $year ?>&country=DE&region=BE">Berlin <?= $year ?></a></li>
-      <li><a href="feiertag.api.php?year=<?= $year ?>&country=PL">Polen <?= $year ?></a></li>
+      <li><a href="feiertag.api.php?year=<?= $year ?>&country=PL&lang=PL">Polen <?= $year ?> (PL)</a></li>
       <li><a href="feiertag.api.php?year=<?= $year ?>&country=CH&region=ZH">Schweiz – Zürich <?= $year ?></a></li>
     </ul>
 
@@ -65,6 +65,14 @@
       <label>Region/Kanton:
         <select id="region">
           <option value="">(optional)</option>
+        </select>
+      </label>
+      <label>Sprache:
+        <select id="language">
+          <?php $defaultLang = 'DE'; ?>
+          <?php foreach (Feiertage::getAvailableLanguages() as $code => $name): ?>
+            <option value="<?= $code ?>" <?= $code === $defaultLang ? 'selected' : '' ?>><?= $name ?></option>
+          <?php endforeach; ?>
         </select>
       </label>
     </div>
