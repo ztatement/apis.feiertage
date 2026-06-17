@@ -1,0 +1,71 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background: #fafafa;
+}
+
+h1 {
+  color: #222;
+}
+
+a {
+  color: #0066cc;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+pre {
+  background: #f4f4f4;
+  padding: 10px;
+  border: 1px solid #ccc;
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: collapse;
+  margin-top: 15px;
+  width: 100%;
+  max-width: 600px;
+}
+
+th,
+td {
+  border: 1px solid #ccc;
+  padding: 6px 10px;
+}
+
+th {
+  background: #eee;
+}
+
+.flex {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+label {
+  font-weight: bold;
+}
+
+select,
+input {
+  padding: 4px;
+}
+
+.json-output {
+  margin-top: 20px;
+}
+
+#calendar {
+  max-width: 900px;
+  margin-top: 30px;
+  background: white;
+  padding: 10px;
+  border-radius: 6px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
